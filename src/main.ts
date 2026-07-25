@@ -27,8 +27,6 @@ async function bootstrap() {
 
   const allowedOrigins = parseCorsOrigins();
 
-  app.setGlobalPrefix('api');
-
   app.getHttpAdapter().getInstance().disable('x-powered-by');
 
   app.use(
