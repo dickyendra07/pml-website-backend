@@ -93,9 +93,12 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
   });
 
-  app.options('*', (_request, response) => {
-    response.sendStatus(204);
-  });
+  app
+    .getHttpAdapter()
+    .getInstance()
+    .options('*', (_request: Request, response: Response) => {
+      response.sendStatus(204);
+    });
 
   app.useStaticAssets(join(process.cwd(), 'public/uploads'), {
     prefix: '/uploads/',
