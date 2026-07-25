@@ -21,35 +21,36 @@ function parseCorsOrigins() {
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  const app =
+    await NestFactory.create<NestExpressApplication>(AppModule);
+
   const allowedOrigins = parseCorsOrigins();
 
   app.setGlobalPrefix('api');
 
   app.getHttpAdapter().getInstance().disable('x-powered-by');
 
-  app.use((_request: Request, response: Response, next: NextFunction) => {
-    response.setHeader('X-Content-Type-Options', 'nosniff');
-    response.setHeader('X-Frame-Options', 'DENY');
-    response.setHeader('Referrer-Policy', 'no-referrer');
-    response.setHeader(
-      'Permissions-Policy',
-      'camera=(), microphone=(), geolocation=()',
-    );
-
-    if (process.env.NODE_ENV === 'production') {
+  app.use(
+    (_request: Request, response: Response, next: NextFunction) => {
+      response.setHeader('X-Content-Type-Options', 'nosniff');
+      response.setHeader('X-Frame-Options', 'DENY');
+      response.setHeader('Referrer-Policy', 'no-referrer');
       response.setHeader(
-        'Strict-Transport-Security',
-        'max-age=31536000; includeSubDomains; preload',
+        'Permissions-Policy',
+        'camera=(), microphone=(), geolocation=()',
       );
-    }
 
-    next();
-  });
+      if (process.env.NODE_ENV === 'production') {
+        response.setHeader(
+          'Strict-Transport-Security',
+          'max-age=31536000; includeSubDomains; preload',
+        );
+      }
 
-  app.useStaticAssets(join(process.cwd(), 'public/uploads'), {
-    prefix: '/uploads/',
-  });
+      next();
+    },
+  );
 
   app.enableCors({
     origin: (origin, callback) => {
@@ -65,27 +66,49 @@ async function bootstrap() {
         return;
       }
 
-      logger.warn(`Blocked CORS request from an unapproved origin.`);
-      callback(new Error('Origin is not allowed by CORS.'), false);
+      logger.warn(
+        `Blocked CORS request from origin: ${origin}`,
+      );
+
+      callback(null, false);
     },
+
     credentials: true,
-    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+
+    methods: [
+      'GET',
+      'HEAD',
+      'PUT',
+      'PATCH',
+      'POST',
+      'DELETE',
+      'OPTIONS',
+    ],
+
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+    ],
+  });
+
+  app.useStaticAssets(join(process.cwd(), 'public/uploads'), {
+    prefix: '/uploads/',
   });
 
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
-      forbidNonWhitelisted: true,
     }),
   );
 
-  const port = process.env.PORT ? Number(process.env.PORT) : 4000;
+  const port = process.env.PORT || 4000;
 
-  await app.listen(port, '0.0.0.0');
+  await app.listen(port);
 
-  logger.log(`PML API is running on http://localhost:${port}/api`);
+  logger.log(
+    `Application running on port ${port}`,
+  );
 }
 
-void bootstrap();
+bootstrap();
