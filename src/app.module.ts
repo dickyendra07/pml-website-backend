@@ -8,6 +8,7 @@ import { RedisModule } from './redis/redis.module';
 import { AuthModule } from './auth/auth.module';
 import { SettingsModule } from './settings/settings.module';
 import { PageSeoModule } from './page-seo/page-seo.module';
+import { LegalPagesModule } from './legal-pages/legal-pages.module';
 import { PopupsModule } from './popups/popups.module';
 import { CataloguesModule } from './catalogues/catalogues.module';
 import { InsightsModule } from './insights/insights.module';
@@ -27,6 +28,7 @@ import { FacilitiesModule } from './facilities/facilities.module';
     AuthModule,
     SettingsModule,
     PageSeoModule,
+    LegalPagesModule,
     PopupsModule,
     CataloguesModule,
     InsightsModule,

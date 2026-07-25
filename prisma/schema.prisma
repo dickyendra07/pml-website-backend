@@ -60,6 +60,11 @@ enum CatalogueDownloadMode {
   REQUEST_REQUIRED
 }
 
+enum LegalPageType {
+  PRIVACY_POLICY
+  COOKIE_POLICY
+}
+
 model AdminUser {
   id           String    @id @default(cuid())
   name         String
@@ -344,4 +349,26 @@ model PageSeo {
 
   @@index([status])
   @@index([path])
+}
+
+model LegalPage {
+  id   String        @id @default(cuid())
+  type LegalPageType @unique
+
+  titleEn           String
+  contentEn         String  @db.Text
+  seoTitleEn        String?
+  metaDescriptionEn String?
+
+  titleId           String?
+  contentId         String? @db.Text
+  seoTitleId        String?
+  metaDescriptionId String?
+
+  status PublishStatus @default(PUBLISHED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
 }

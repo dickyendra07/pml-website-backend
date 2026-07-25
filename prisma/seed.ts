@@ -50,6 +50,44 @@ async function main() {
     });
   }
 
+
+
+  await prisma.legalPage.upsert({
+    where: {
+      type: 'PRIVACY_POLICY',
+    },
+    update: {},
+    create: {
+      type: 'PRIVACY_POLICY',
+      titleEn: 'Privacy Policy',
+      contentEn:
+        '<p>Privacy Policy content will be updated from CMS.</p>',
+      titleId: 'Kebijakan Privasi',
+      contentId:
+        '<p>Konten Kebijakan Privasi akan diperbarui melalui CMS.</p>',
+      status: 'PUBLISHED',
+    },
+  });
+
+  await prisma.legalPage.upsert({
+    where: {
+      type: 'COOKIE_POLICY',
+    },
+    update: {},
+    create: {
+      type: 'COOKIE_POLICY',
+      titleEn: 'Cookie Policy',
+      contentEn:
+        '<p>Cookie Policy content will be updated from CMS.</p>',
+      titleId: 'Kebijakan Cookie',
+      contentId:
+        '<p>Konten Kebijakan Cookie akan diperbarui melalui CMS.</p>',
+      status: 'PUBLISHED',
+    },
+  });
+
+  console.log('Seeded legal pages: 2');
+
   console.log('Seeded default site settings:', defaultSettings.length);
 
   console.log('Seeded admin user:', {
