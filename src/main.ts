@@ -1,7 +1,6 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'path';
 import type { Request, Response, NextFunction } from 'express';
 import { AppModule } from './app.module';
 
@@ -26,6 +25,8 @@ async function bootstrap() {
     await NestFactory.create<NestExpressApplication>(AppModule);
 
   const allowedOrigins = parseCorsOrigins();
+
+  app.setGlobalPrefix('api');
 
   app.getHttpAdapter().getInstance().disable('x-powered-by');
 
@@ -76,21 +77,6 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
   });
 
-  app.use(
-    (request: Request, response: Response, next: NextFunction) => {
-      if (request.method === 'OPTIONS') {
-        response.sendStatus(204);
-        return;
-      }
-
-      next();
-    },
-  );
-
-  app.useStaticAssets(join(process.cwd(), 'public/uploads'), {
-    prefix: '/uploads/',
-  });
-
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -98,13 +84,11 @@ async function bootstrap() {
     }),
   );
 
-  const port = process.env.PORT || 4000;
-
-  await app.listen(port);
+  await app.listen(process.env.PORT ?? 4000);
 
   logger.log(
-    `Application running on port ${port}`,
+    `Application running on port ${process.env.PORT ?? 4000}`,
   );
 }
 
-bootstrap();
+void bootstrap();
