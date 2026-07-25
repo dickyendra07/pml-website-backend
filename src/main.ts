@@ -89,6 +89,12 @@ async function bootstrap() {
       'Content-Type',
       'Authorization',
     ],
+
+    optionsSuccessStatus: 204,
+  });
+
+  app.options('*', (_request, response) => {
+    response.sendStatus(204);
   });
 
   app.useStaticAssets(join(process.cwd(), 'public/uploads'), {
