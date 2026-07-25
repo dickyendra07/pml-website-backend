@@ -36,10 +36,6 @@ async function bootstrap() {
       response.setHeader('X-Content-Type-Options', 'nosniff');
       response.setHeader('X-Frame-Options', 'DENY');
       response.setHeader('Referrer-Policy', 'no-referrer');
-      response.setHeader(
-        'Permissions-Policy',
-        'camera=(), microphone=(), geolocation=()',
-      );
 
       if (process.env.NODE_ENV === 'production') {
         response.setHeader(
@@ -66,39 +62,32 @@ async function bootstrap() {
         return;
       }
 
-      logger.warn(
-        `Blocked CORS request from origin: ${origin}`,
-      );
+      logger.warn(`Blocked CORS origin: ${origin}`);
 
       callback(null, false);
     },
 
     credentials: true,
 
-    methods: [
-      'GET',
-      'HEAD',
-      'PUT',
-      'PATCH',
-      'POST',
-      'DELETE',
-      'OPTIONS',
-    ],
+    methods:
+      'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
 
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-    ],
+    allowedHeaders:
+      'Content-Type,Authorization',
 
     optionsSuccessStatus: 204,
   });
 
-  app
-    .getHttpAdapter()
-    .getInstance()
-    .options('*', (_request: Request, response: Response) => {
-      response.sendStatus(204);
-    });
+  app.use(
+    (request: Request, response: Response, next: NextFunction) => {
+      if (request.method === 'OPTIONS') {
+        response.sendStatus(204);
+        return;
+      }
+
+      next();
+    },
+  );
 
   app.useStaticAssets(join(process.cwd(), 'public/uploads'), {
     prefix: '/uploads/',
