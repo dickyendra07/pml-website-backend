@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import type { Request, Response, NextFunction } from 'express';
 import { AppModule } from './app.module';
+import { join } from 'path';
 
 function parseCorsOrigins() {
   const environment = process.env.NODE_ENV || 'development';
@@ -27,6 +28,8 @@ async function bootstrap() {
   const allowedOrigins = parseCorsOrigins();
 
   app.setGlobalPrefix('api');
+
+  app.useStaticAssets(join(process.cwd(), 'public'));
 
   app.getHttpAdapter().getInstance().disable('x-powered-by');
 
