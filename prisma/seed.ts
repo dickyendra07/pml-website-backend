@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { defaultSettings } from './default-settings';
+import './seed-insights';
 
 const prisma = new PrismaClient();
 

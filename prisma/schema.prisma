@@ -216,8 +216,13 @@ model InsightPost {
   seoTitleId        String?
   metaDescriptionId String?
 
-  category    String
-  coverImage  String?
+  category   String
+  coverImage String?
+
+  coverMediaId String?
+
+  coverMedia MediaAsset? @relation(fields: [coverMediaId], references: [id], onDelete: SetNull)
+
   status      PublishStatus @default(DRAFT)
   isFeatured  Boolean       @default(false)
   publishedAt DateTime?
@@ -250,22 +255,54 @@ model HomepageFeature {
 }
 
 model MediaAsset {
-  id           String    @id @default(cuid())
+  id String @id @default(cuid())
+
   filename     String
   originalName String?
-  mimeType     String?
-  size         Int?
-  url          String
-  type         MediaType @default(OTHER)
-  altText      String?
-  caption      String?
-  folder       String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+
+  mimeType String?
+  size     Int?
+
+  width  Int?
+  height Int?
+
+  url String
+
+  type MediaType @default(OTHER)
+
+  altText String?
+  caption String?
+
+  folder String?
+
+  variants MediaVariant[]
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  insightPosts InsightPost[]
 
   @@index([type])
   @@index([folder])
   @@index([createdAt])
+}
+
+model MediaVariant {
+  id String @id @default(cuid())
+
+  mediaId String
+
+  name String
+
+  url String
+
+  width  Int?
+  height Int?
+
+  createdAt DateTime @default(now())
+
+  media MediaAsset @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@index([mediaId])
 }
 
 model Facility {

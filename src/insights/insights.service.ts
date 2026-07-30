@@ -233,6 +233,32 @@ export class InsightsService {
     return posts.map((post) => this.mapPublicPost(post, locale));
   }
 
+  async findPublicBySlug(
+    slug: string,
+    locale: InsightLocale = 'en',
+  ) {
+    const isIndonesian = locale === 'id';
+
+    const post = await this.prisma.insightPost.findFirst({
+      where: {
+        status: PublishStatus.PUBLISHED,
+        ...(isIndonesian
+          ? {
+              slugId: slug,
+            }
+          : {
+              slugEn: slug,
+            }),
+      },
+    });
+
+    if (!post) {
+      throw new NotFoundException('Insight post not found.');
+    }
+
+    return this.mapPublicPost(post, locale);
+  }
+
   async findAllAdmin() {
     return this.prisma.insightPost.findMany({
       orderBy: [{ updatedAt: 'desc' }],

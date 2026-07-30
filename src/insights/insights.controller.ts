@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 
 import { InsightsService } from './insights.service';
 
@@ -14,5 +14,18 @@ export class InsightsController {
     const selectedLocale = locale === 'id' ? 'id' : 'en';
 
     return this.insightsService.findPublic(category, selectedLocale);
+  }
+
+  @Get(':slug')
+  findBySlug(
+    @Param('slug') slug: string,
+    @Query('locale') locale?: string,
+  ) {
+    const selectedLocale = locale === 'id' ? 'id' : 'en';
+
+    return this.insightsService.findPublicBySlug(
+      slug,
+      selectedLocale,
+    );
   }
 }

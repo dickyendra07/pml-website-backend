@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { MediaType, Prisma } from '@prisma/client';
 import { unlink } from 'fs/promises';
-import { resolve, sep } from 'path';
+import { existsSync } from 'fs';
+import { resolve, sep, join } from 'path';
+import sharp from 'sharp';
+
 import { PrismaService } from '../prisma/prisma.service';
 import { sanitizeMediaFolder } from '../common/upload/upload-security';
 import { UpdateMediaAssetDto } from './dto/update-media-asset.dto';
+
 
 function detectMediaType(mimeType?: string): MediaType {
   if (!mimeType) return MediaType.OTHER;
@@ -15,6 +19,7 @@ function detectMediaType(mimeType?: string): MediaType {
 
   return MediaType.OTHER;
 }
+
 
 async function deletePhysicalMediaFile(url: string) {
   const mediaDirectory = resolve(process.cwd(), 'public/uploads/media');
@@ -36,78 +41,276 @@ async function deletePhysicalMediaFile(url: string) {
   }
 }
 
+
 @Injectable()
 export class MediaService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+  ) {}
 
-  async findAll(type?: string, folder?: string) {
+
+  async findAll(
+    type?: string,
+    folder?: string,
+  ) {
     return this.prisma.mediaAsset.findMany({
       where: {
         ...(type ? { type: type as MediaType } : {}),
         ...(folder ? { folder } : {}),
       },
-      orderBy: [{ createdAt: 'desc' }],
+      include: {
+        variants: true,
+      },
+      orderBy: [
+        {
+          createdAt: 'desc',
+        },
+      ],
     });
   }
 
-  async createFromUpload(file: Express.Multer.File, folder = 'general') {
-    const url = `/uploads/media/${file.filename}`;
+
+  async createFromUpload(
+    file: Express.Multer.File,
+    folder = 'general',
+  ) {
+
+    const safeFolder = sanitizeMediaFolder(folder);
+
+    const uploadDirectory = resolve(
+      process.cwd(),
+      'public/uploads/media',
+    );
+
+
+    const originalUrl =
+      `/uploads/media/${file.filename}`;
+
+
+    let width: number | null = null;
+    let height: number | null = null;
+
+
+    const isImage =
+      file.mimetype.startsWith('image/');
+
+
+    const variants: {
+      name: string;
+      url: string;
+      width: number;
+      height: number;
+    }[] = [];
+
+
+    if (isImage) {
+
+      const metadata = await sharp(file.path)
+        .metadata();
+
+
+      width = metadata.width || null;
+      height = metadata.height || null;
+
+
+      const baseName =
+        file.filename.replace(/\.[^/.]+$/, '');
+
+
+      const variantConfigs = [
+        {
+          name: 'hero',
+          width: 1600,
+          height: 900,
+        },
+        {
+          name: 'card',
+          width: 900,
+          height: 600,
+        },
+        {
+          name: 'thumbnail',
+          width: 400,
+          height: 400,
+        },
+      ];
+
+
+      for (const variant of variantConfigs) {
+
+        const filename =
+          `${baseName}-${variant.name}.webp`;
+
+
+        const outputPath =
+          join(
+            uploadDirectory,
+            filename,
+          );
+
+
+        await sharp(file.path)
+          .resize(
+            variant.width,
+            variant.height,
+            {
+              fit: 'cover',
+            },
+          )
+          .webp({
+            quality: 85,
+          })
+          .toFile(outputPath);
+
+
+        variants.push({
+          name: variant.name,
+          url:
+            `/uploads/media/${filename}`,
+          width: variant.width,
+          height: variant.height,
+        });
+      }
+    }
+
 
     return this.prisma.mediaAsset.create({
       data: {
+
         filename: file.filename,
-        originalName: file.originalname,
-        mimeType: file.mimetype,
-        size: file.size,
-        url,
-        type: detectMediaType(file.mimetype),
-        folder: sanitizeMediaFolder(folder),
+
+        originalName:
+          file.originalname,
+
+        mimeType:
+          file.mimetype,
+
+        size:
+          file.size,
+
+        width,
+
+        height,
+
+        url:
+          originalUrl,
+
+        type:
+          detectMediaType(file.mimetype),
+
+        folder:
+          safeFolder,
+
+
+        variants: {
+          create:
+            variants,
+        },
+      },
+
+      include: {
+        variants: true,
       },
     });
   }
 
-  async update(id: string, dto: UpdateMediaAssetDto) {
-    const existing = await this.prisma.mediaAsset.findUnique({
-      where: { id },
-    });
+
+  async update(
+    id: string,
+    dto: UpdateMediaAssetDto,
+  ) {
+
+    const existing =
+      await this.prisma.mediaAsset.findUnique({
+        where: {
+          id,
+        },
+      });
+
 
     if (!existing) {
-      throw new NotFoundException('Media asset not found.');
+      throw new NotFoundException(
+        'Media asset not found.',
+      );
     }
 
-    const data: Prisma.MediaAssetUpdateInput = {};
 
-    if (dto.altText !== undefined) data.altText = dto.altText;
-    if (dto.caption !== undefined) data.caption = dto.caption;
-    if (dto.folder !== undefined) {
-      data.folder = sanitizeMediaFolder(dto.folder);
-    }
-    if (dto.type !== undefined) data.type = dto.type;
+    const data:
+      Prisma.MediaAssetUpdateInput = {};
+
+
+    if (dto.altText !== undefined)
+      data.altText = dto.altText;
+
+
+    if (dto.caption !== undefined)
+      data.caption = dto.caption;
+
+
+    if (dto.folder !== undefined)
+      data.folder =
+        sanitizeMediaFolder(dto.folder);
+
+
+    if (dto.type !== undefined)
+      data.type = dto.type;
+
 
     return this.prisma.mediaAsset.update({
-      where: { id },
+      where: {
+        id,
+      },
       data,
+      include: {
+        variants: true,
+      },
     });
   }
 
+
   async remove(id: string) {
-    const existing = await this.prisma.mediaAsset.findUnique({
-      where: { id },
-    });
+
+    const existing =
+      await this.prisma.mediaAsset.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          variants: true,
+        },
+      });
+
 
     if (!existing) {
-      throw new NotFoundException('Media asset not found.');
+      throw new NotFoundException(
+        'Media asset not found.',
+      );
     }
 
-    await deletePhysicalMediaFile(existing.url);
+
+    await deletePhysicalMediaFile(
+      existing.url,
+    );
+
+
+    for (const variant of existing.variants) {
+      await deletePhysicalMediaFile(
+        variant.url,
+      );
+    }
+
 
     await this.prisma.mediaAsset.delete({
-      where: { id },
+      where: {
+        id,
+      },
     });
+
 
     return {
       success: true,
-      message: 'Media asset and physical file deleted successfully.',
+      message:
+        'Media asset deleted successfully.',
     };
   }
 }
