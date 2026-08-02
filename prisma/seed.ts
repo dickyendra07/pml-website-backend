@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { defaultSettings } from './default-settings';
+import { seedFacilities } from './seed-facilities';
 import './seed-insights';
 
 const prisma = new PrismaClient();
@@ -86,6 +87,8 @@ async function main() {
       status: 'PUBLISHED',
     },
   });
+
+  await seedFacilities(prisma);
 
   console.log('Seeded legal pages: 2');
 
