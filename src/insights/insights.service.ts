@@ -6,6 +6,7 @@ import {
 import { Prisma, PublishStatus } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { toMediaReferenceJson } from '../media/media-reference';
 import { CreateInsightDto } from './dto/create-insight.dto';
 import { UpdateInsightDto } from './dto/update-insight.dto';
 
@@ -85,6 +86,10 @@ export class InsightsService {
 
       category: dto.category,
       coverImage: normalizeOptionalText(dto.coverImage),
+      coverReference:
+        dto.coverReference !== undefined
+          ? toMediaReferenceJson(dto.coverReference)
+          : undefined,
       status,
       isFeatured: dto.isFeatured || false,
       publishedAt:
@@ -159,6 +164,10 @@ export class InsightsService {
 
     if (dto.coverImage !== undefined) {
       data.coverImage = normalizeOptionalText(dto.coverImage);
+    }
+
+    if (dto.coverReference !== undefined) {
+      data.coverReference = toMediaReferenceJson(dto.coverReference);
     }
 
     if (dto.status !== undefined) data.status = dto.status;

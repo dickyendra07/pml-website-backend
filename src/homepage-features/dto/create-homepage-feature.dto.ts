@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsInt, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class CreateHomepageFeatureDto {
   @IsString()
@@ -18,6 +18,10 @@ export class CreateHomepageFeatureDto {
   @IsOptional()
   @IsString()
   imageUrl?: string;
+
+  @IsOptional()
+  @IsObject()
+  imageReference?: Record<string, unknown> | null;
 
   @IsOptional()
   @IsString()

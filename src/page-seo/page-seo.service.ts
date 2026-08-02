@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PageSeo, PublishStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdatePageSeoDto } from './dto/update-page-seo.dto';
+import { toMediaReferenceJson } from '../media/media-reference';
 
 type DefaultPageSeo = {
   path: string;
@@ -142,6 +143,10 @@ export class PageSeoService {
       },
       data: {
         ...dto,
+        ogImageReference:
+          dto.ogImageReference !== undefined
+            ? toMediaReferenceJson(dto.ogImageReference)
+            : undefined,
         status: dto.status,
       },
     });

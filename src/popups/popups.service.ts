@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PopupType, Prisma, PublishStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { toMediaReferenceJson } from '../media/media-reference';
 import { CreatePopupDto } from './dto/create-popup.dto';
 import { UpdatePopupDto } from './dto/update-popup.dto';
 
@@ -24,6 +25,9 @@ export class PopupsService {
     if (dto.buttonLabel !== undefined) data.buttonLabel = dto.buttonLabel;
     if (dto.buttonUrl !== undefined) data.buttonUrl = dto.buttonUrl;
     if (dto.imageUrl !== undefined) data.imageUrl = dto.imageUrl;
+    if (dto.imageReference !== undefined) {
+      data.imageReference = toMediaReferenceJson(dto.imageReference);
+    }
     if (dto.layout !== undefined) data.layout = dto.layout;
     if (dto.type !== undefined) data.type = dto.type;
     if (dto.status !== undefined) data.status = dto.status;
@@ -71,6 +75,10 @@ export class PopupsService {
         buttonLabel: dto.buttonLabel,
         buttonUrl: dto.buttonUrl,
         imageUrl: dto.imageUrl,
+        imageReference:
+          dto.imageReference !== undefined
+            ? toMediaReferenceJson(dto.imageReference)
+            : undefined,
         layout: dto.layout || 'IMAGE_LEFT',
         type: dto.type || PopupType.ANNOUNCEMENT,
         status: dto.status || PublishStatus.DRAFT,

@@ -1,4 +1,4 @@
-import { IsIn, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class UpdatePageSeoDto {
   @IsOptional()
@@ -24,6 +24,10 @@ export class UpdatePageSeoDto {
   @IsOptional()
   @IsString()
   ogImage?: string;
+
+  @IsOptional()
+  @IsObject()
+  ogImageReference?: Record<string, unknown> | null;
 
   @IsOptional()
   @IsString()

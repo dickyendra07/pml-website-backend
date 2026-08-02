@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { MediaType, Prisma } from '@prisma/client';
 import { unlink } from 'fs/promises';
-import { existsSync } from 'fs';
 import { resolve, sep, join } from 'path';
 import sharp from 'sharp';
 
@@ -269,7 +268,46 @@ export class MediaService {
       );
 
 
-    await sharp(sourcePath)
+    let pipeline = sharp(sourcePath);
+
+    if (
+      dto.x !== undefined &&
+      dto.y !== undefined &&
+      dto.cropWidth !== undefined &&
+      dto.cropHeight !== undefined
+    ) {
+      const metadata = await sharp(sourcePath).metadata();
+      const sourceWidth = metadata.width || 0;
+      const sourceHeight = metadata.height || 0;
+
+      if (sourceWidth > 0 && sourceHeight > 0) {
+        const left = Math.min(
+          Math.max(0, Math.round(dto.x)),
+          sourceWidth - 1,
+        );
+        const top = Math.min(
+          Math.max(0, Math.round(dto.y)),
+          sourceHeight - 1,
+        );
+        const cropWidth = Math.min(
+          Math.max(1, Math.round(dto.cropWidth)),
+          sourceWidth - left,
+        );
+        const cropHeight = Math.min(
+          Math.max(1, Math.round(dto.cropHeight)),
+          sourceHeight - top,
+        );
+
+        pipeline = pipeline.extract({
+          left,
+          top,
+          width: cropWidth,
+          height: cropHeight,
+        });
+      }
+    }
+
+    await pipeline
       .resize(
         dto.width,
         dto.height,

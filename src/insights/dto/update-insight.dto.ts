@@ -2,6 +2,7 @@ import {
   IsArray,
   IsBoolean,
   IsIn,
+  IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -72,6 +73,10 @@ export class UpdateInsightDto {
   @IsOptional()
   @IsString()
   coverImage?: string;
+
+  @IsOptional()
+  @IsObject()
+  coverReference?: Record<string, unknown> | null;
 
   @IsOptional()
   @IsIn(['DRAFT', 'PUBLISHED', 'ARCHIVED'])

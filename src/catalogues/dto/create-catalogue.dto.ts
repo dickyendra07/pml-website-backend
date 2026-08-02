@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsInt, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class CreateCatalogueDto {
   @IsString()
@@ -23,6 +23,10 @@ export class CreateCatalogueDto {
   @IsOptional()
   @IsString()
   coverImage?: string;
+
+  @IsOptional()
+  @IsObject()
+  coverReference?: Record<string, unknown> | null;
 
   @IsOptional()
   @IsIn(['PUBLIC_DOWNLOAD', 'REQUEST_REQUIRED'])

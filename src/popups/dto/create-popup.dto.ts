@@ -1,4 +1,11 @@
-import { IsArray, IsIn, IsInt, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsIn,
+  IsInt,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreatePopupDto {
   @IsString()
@@ -19,6 +26,10 @@ export class CreatePopupDto {
   @IsOptional()
   @IsString()
   imageUrl?: string;
+
+  @IsOptional()
+  @IsObject()
+  imageReference?: Record<string, unknown> | null;
 
   @IsOptional()
   @IsIn(['IMAGE_LEFT', 'IMAGE_RIGHT', 'IMAGE_TOP', 'TEXT_ONLY'])

@@ -6,6 +6,7 @@ import {
   PublishStatus,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { toMediaReferenceJson } from '../media/media-reference';
 import { CreateCatalogueRequestDto } from './dto/create-catalogue-request.dto';
 import { CreateCatalogueDto } from './dto/create-catalogue.dto';
 import { UpdateCatalogueDto } from './dto/update-catalogue.dto';
@@ -34,6 +35,9 @@ export class CataloguesService {
     if (dto.serviceType !== undefined) data.serviceType = dto.serviceType;
     if (dto.fileUrl !== undefined) data.fileUrl = dto.fileUrl;
     if (dto.coverImage !== undefined) data.coverImage = dto.coverImage;
+    if (dto.coverReference !== undefined) {
+      data.coverReference = toMediaReferenceJson(dto.coverReference);
+    }
     if (dto.downloadMode !== undefined) data.downloadMode = dto.downloadMode;
     if (dto.status !== undefined) data.status = dto.status;
     if (dto.sortOrder !== undefined) data.sortOrder = dto.sortOrder;
@@ -74,6 +78,10 @@ export class CataloguesService {
         serviceType: dto.serviceType,
         fileUrl: dto.fileUrl,
         coverImage: dto.coverImage,
+        coverReference:
+          dto.coverReference !== undefined
+            ? toMediaReferenceJson(dto.coverReference)
+            : undefined,
         downloadMode:
           dto.downloadMode || CatalogueDownloadMode.REQUEST_REQUIRED,
         status: dto.status || PublishStatus.DRAFT,
