@@ -8,6 +8,7 @@ import sharp from 'sharp';
 import { PrismaService } from '../prisma/prisma.service';
 import { sanitizeMediaFolder } from '../common/upload/upload-security';
 import { UpdateMediaAssetDto } from './dto/update-media-asset.dto';
+import { CropMediaDto } from './dto/crop-media.dto';
 
 
 function detectMediaType(mimeType?: string): MediaType {
@@ -213,6 +214,87 @@ export class MediaService {
       },
     });
   }
+
+
+  async crop(
+    id: string,
+    dto: CropMediaDto,
+  ) {
+    const existing =
+      await this.prisma.mediaAsset.findUnique({
+        where: {
+          id,
+        },
+      });
+
+    if (!existing) {
+      throw new NotFoundException(
+        'Media asset not found.',
+      );
+    }
+
+
+    const sourcePath =
+      resolve(
+        process.cwd(),
+        'public',
+        existing.url.replace(/^\/+/, ''),
+      );
+
+
+    const baseName =
+      existing.filename.replace(
+        /\.[^/.]+$/,
+        '',
+      );
+
+
+    const safeRatio =
+      dto.ratio
+        .replace(/[^a-zA-Z0-9-]/g, '-')
+        .toLowerCase();
+
+
+    const filename =
+      `${baseName}-${safeRatio}-${Date.now()}.webp`;
+
+
+    const outputPath =
+      join(
+        resolve(
+          process.cwd(),
+          'public/uploads/media',
+        ),
+        filename,
+      );
+
+
+    await sharp(sourcePath)
+      .resize(
+        dto.width,
+        dto.height,
+        {
+          fit: 'cover',
+          position: 'centre',
+        },
+      )
+      .webp({
+        quality: 85,
+      })
+      .toFile(outputPath);
+
+
+    return this.prisma.mediaVariant.create({
+      data: {
+        mediaId: existing.id,
+        name: dto.ratio,
+        url: `/uploads/media/${filename}`,
+        width: dto.width,
+        height: dto.height,
+      },
+    });
+  }
+
 
 
   async update(

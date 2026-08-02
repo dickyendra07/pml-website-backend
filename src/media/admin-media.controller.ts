@@ -23,6 +23,7 @@ import {
   sanitizeMediaFolder,
 } from '../common/upload/upload-security';
 import { UpdateMediaAssetDto } from './dto/update-media-asset.dto';
+import { CropMediaDto } from './dto/crop-media.dto';
 import { MediaService } from './media.service';
 
 const allowedMediaTypes = [
@@ -75,6 +76,15 @@ export class AdminMediaController {
   update(@Param('id') id: string, @Body() dto: UpdateMediaAssetDto) {
     return this.mediaService.update(id, dto);
   }
+
+  @Patch(':id/crop')
+  crop(
+    @Param('id') id: string,
+    @Body() dto: CropMediaDto,
+  ) {
+    return this.mediaService.crop(id, dto);
+  }
+
 
   @Delete(':id')
   remove(@Param('id') id: string) {
