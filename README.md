@@ -88,10 +88,10 @@ npm run db:seed
 
 ## Repository Structure
 
-src/              NestJS application source  
-prisma/           Database schema and migrations  
-public/           Public uploaded assets  
-test/             Automated tests  
+- `src/` — NestJS application source
+- `prisma/` — Database schema and migrations
+- `public/` — Public uploaded assets
+- `test/` — Automated tests
 
 ## Frontend Repository
 
@@ -107,3 +107,28 @@ Technology:
 - React
 - TypeScript
 - Tailwind CSS
+
+## Persistent CMS uploads on Railway
+
+CMS files are stored under `public/uploads` and served publicly from
+`/uploads`. The database stores relative URLs such as
+`/uploads/media/example.png`.
+
+Railway's application filesystem is ephemeral, so the backend service must
+have a persistent Railway Volume mounted at:
+
+```text
+/app/public/uploads
+```
+
+Railway exposes the mount location through `RAILWAY_VOLUME_MOUNT_PATH`. At
+startup, the application verifies that this value resolves to
+`public/uploads` and that the directory is readable and writable. A Railway
+deployment without the volume, or with a different mount path, fails fast to
+avoid accepting uploads that would disappear after a redeploy.
+
+The volume is mounted only at runtime. Do not generate or copy uploads during
+the build or pre-deploy phase.
+
+Local development continues to use `public/uploads` in the repository
+working tree. Uploaded binaries remain excluded from Git.
