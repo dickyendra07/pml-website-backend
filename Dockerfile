@@ -66,8 +66,6 @@ COPY --from=builder /app/public ./public
 RUN mkdir -p /app/public/uploads \
   && chown -R node:node /app/public/uploads
 
-USER node
-
 EXPOSE 4000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
