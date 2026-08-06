@@ -274,8 +274,13 @@ model MediaAsset {
 
   type MediaType @default(OTHER)
 
-  altText String?
-  caption String?
+  // SEO Metadata
+  title       String?
+  altText     String?
+  description String?
+  caption     String?
+
+  tags String[] @default([])
 
   folder String?
 

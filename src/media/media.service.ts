@@ -359,12 +359,24 @@ export class MediaService {
       Prisma.MediaAssetUpdateInput = {};
 
 
+    if (dto.title !== undefined)
+      data.title = dto.title;
+
+
     if (dto.altText !== undefined)
       data.altText = dto.altText;
 
 
+    if (dto.description !== undefined)
+      data.description = dto.description;
+
+
     if (dto.caption !== undefined)
       data.caption = dto.caption;
+
+
+    if (dto.tags !== undefined)
+      data.tags = dto.tags;
 
 
     if (dto.folder !== undefined)
@@ -374,6 +386,10 @@ export class MediaService {
 
     if (dto.type !== undefined)
       data.type = dto.type;
+
+
+    console.log("MEDIA UPDATE DTO:", dto);
+    console.log("MEDIA UPDATE DATA:", data);
 
 
     return this.prisma.mediaAsset.update({
