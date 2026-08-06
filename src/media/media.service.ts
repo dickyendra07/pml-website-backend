@@ -359,6 +359,10 @@ export class MediaService {
       Prisma.MediaAssetUpdateInput = {};
 
 
+    if (dto.filename !== undefined)
+      data.filename = dto.filename;
+
+
     if (dto.title !== undefined)
       data.title = dto.title;
 

@@ -3,6 +3,10 @@ import { IsArray, IsIn, IsOptional, IsString } from 'class-validator';
 export class UpdateMediaAssetDto {
   @IsOptional()
   @IsString()
+  filename?: string;
+
+  @IsOptional()
+  @IsString()
   title?: string;
 
   @IsOptional()
